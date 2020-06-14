@@ -1,0 +1,48 @@
+---
+    - name: install and build package
+      hosts: work
+      become: yes
+  
+     tasks:
+       - name: apt install tomcat
+           apt: 
+            name: tomcat8
+            ststus: latest
+    - name: Start maven instl
+       apt:
+        name: maven
+        state: latest
+  
+    - name: clone git
+      git: 
+        repo: 'https://github.com/boxfuse/boxfuse-sample-java-war-hello.git'
+        dest: /usr/boxfuse/
+    - name: Build maven package
+       shell:
+       cmd: mvn maven
+       chdir: /usr/boxfuse/
+    - name: copy destination file
+       shell: cp "/usr/boxfuse/target/hello-1.0.war" "/var/lib/tomcat8/webapps/"
+  
+    - name: runing app
+      hosts: prod
+      become: yes
+      tasks:
+      - name: Ensure tomcat package is present
+       apt:
+        name: tomcat8
+        state: latest 
+  
+    - name: service running
+         service:
+         name: tomcat8
+         state: started
+         - name: Transfer file from work to prod
+         synchronize:
+          src: /home/boxfuse/target/
+          dest: /var/lib/tomcat8/webapps/
+       - name: restart tomcat
+         systemd:
+         state: restart
+         name: tomcat8
+   
