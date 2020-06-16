@@ -3,7 +3,7 @@
       hosts: work
       become: yes
   
-     tasks:
+      tasks:
        - name: apt install tomcat
            apt: 
             name: tomcat8
